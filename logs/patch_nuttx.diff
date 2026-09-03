@@ -1,0 +1,65 @@
+diff --git a/arch/arm/include/stm32h7/chip.h b/arch/arm/include/stm32h7/chip.h
+index 3369d6c5410..a31517b4327 100644
+--- a/arch/arm/include/stm32h7/chip.h
++++ b/arch/arm/include/stm32h7/chip.h
+@@ -86,12 +86,12 @@
+ #if defined(CONFIG_STM32H7_STM32H7X3XX) || defined(CONFIG_STM32H7_STM32H7X5XX)
+ /* Memory */
+ 
+-#    define STM32H7_SRAM_SIZE             (512*1024)  /* 512Kb SRAM on AXI bus Matrix (D1) */
+-#    define STM32H7_SRAM1_SIZE            (128*1024)  /* 128Kb SRAM1 on AHB bus Matrix (D2) */
+-#    define STM32H7_SRAM2_SIZE            (128*1024)  /* 128Kb SRAM2 on AHB bus Matrix (D2) */
+-#    define STM32H7_SRAM3_SIZE            (32*1024)   /*  32Kb SRAM3 on AHB bus Matrix (D2) */
+-#    define STM32H7_SRAM123_SIZE          (288*1024)  /* 128Kb SRAM123 on AHB bus Matrix (D2) */
+-#    define STM32H7_SRAM4_SIZE            (64*1024)   /*  64Kb SRAM2 on AHB bus Matrix (D3) */
++#    define STM32H7_SRAM_SIZE             (1024*1024)  /* 512Kb SRAM on AXI bus Matrix (D1) */
++#    define STM32H7_SRAM1_SIZE            (64*1024)  /* 128Kb SRAM1 on AHB bus Matrix (D2) */
++#    define STM32H7_SRAM2_SIZE            (64*1024)  /* 128Kb SRAM2 on AHB bus Matrix (D2) */
++#    define STM32H7_SRAM3_SIZE            (0*1024)   /*  32Kb SRAM3 on AHB bus Matrix (D2) */
++#    define STM32H7_SRAM123_SIZE          (128*1024)  /* 128Kb SRAM123 on AHB bus Matrix (D2) */
++#    define STM32H7_SRAM4_SIZE            (32*1024)   /*  64Kb SRAM2 on AHB bus Matrix (D3) */
+ #  if defined(CONFIG_ARMV7M_HAVE_DTCM)
+ #      define STM32H7_DTCM_SRAM_SIZE      (128*1024)  /* 128Kb DTCM SRAM on TCM interface */
+ #  else
+diff --git a/arch/arm/src/stm32h7/Kconfig b/arch/arm/src/stm32h7/Kconfig
+index 6b0198fe58b..d8010c99d3a 100644
+--- a/arch/arm/src/stm32h7/Kconfig
++++ b/arch/arm/src/stm32h7/Kconfig
+@@ -112,6 +112,9 @@ config ARCH_CHIP_STM32H743ZG
+ 		LQFP144
+ 
+ config ARCH_CHIP_STM32H743ZI
++select ARCH_HAVE_LEDS
++select ARCH_HAVE_BUTTONS
++select ARCH_HAVE_IRQBUTTONS
+ 	bool "STM32H743ZI"
+ 	select STM32H7_STM32H7X3XX
+ 	select STM32H7_FLASH_CONFIG_I
+diff --git a/arch/arm/src/stm32h7/stm32h7x3xx_rcc.c b/arch/arm/src/stm32h7/stm32h7x3xx_rcc.c
+index 917badee514..e2930a6c111 100644
+--- a/arch/arm/src/stm32h7/stm32h7x3xx_rcc.c
++++ b/arch/arm/src/stm32h7/stm32h7x3xx_rcc.c
+@@ -154,14 +154,21 @@
+ #    define STM32_PWR_CR3_SELECTION STM32_PWR_CR3_LDOEN
+ #  endif
+ #else
+-#  define STM32_PWR_CR3_MASK  0xffffffff
++#  define STM32_PWR_CR3_MASK  ~(STM32_PWR_CR3_BYPASS | STM32_PWR_CR3_LDOEN | (1 << 2))
+ #  if defined(CONFIG_STM32H7_PWR_EXTERNAL_SOURCE_SUPPLY)
+ #    define STM32_PWR_CR3_SELECTION (STM32_PWR_CR3_BYPASS | STM32_PWR_CR3_SCUEN)
+ #  else
+-#    define STM32_PWR_CR3_SELECTION (STM32_PWR_CR3_LDOEN | STM32_PWR_CR3_SCUEN)
++#    define STM32_PWR_CR3_SELECTION (1 << 2)
+ #  endif
+ 
+ #endif
++#ifdef CONFIG_ARCH_CHIP_STM32H7A3ZI
++#  undef STM32_PWR_CR3_MASK
++#  undef STM32_PWR_CR3_SELECTION
++#  define STM32_PWR_CR3_MASK     ~(STM32_PWR_CR3_BYPASS | STM32_PWR_CR3_LDOEN | (1 << 2))
++#  define STM32_PWR_CR3_SELECTION (1 << 2)
++#endif
++
+ 
+ /****************************************************************************
+  * Private Functions
