@@ -1,0 +1,9 @@
+# Register OpenWave with the NuttX apps build.
+#
+# $(APPDIR) is the openvela "apps/" root; "apps/packages" is a symlink to
+# the top-level "packages/" directory.  The contest manifest maps
+# app/openwave -> packages/demos/contest2026_406_openwave, so the
+# registration path below must match that dest exactly.
+ifneq ($(CONFIG_OPENWAVE),)
+CONFIGURED_APPS += $(APPDIR)/packages/demos/contest2026_406_openwave
+endif

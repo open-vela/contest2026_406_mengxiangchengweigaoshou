@@ -1,0 +1,550 @@
+diff --git a/boards/stm32h7a3/nucleo-h7a3zi-q/configs/m2-bsp/defconfig b/boards/stm32h7a3/nucleo-h7a3zi-q/configs/m2-bsp/defconfig
+index 97a5562..f064338 100644
+--- a/boards/stm32h7a3/nucleo-h7a3zi-q/configs/m2-bsp/defconfig
++++ b/boards/stm32h7a3/nucleo-h7a3zi-q/configs/m2-bsp/defconfig
+@@ -5,21 +5,23 @@
+ # You can then do "make savedefconfig" to generate a new defconfig file that includes your
+ # modifications.
+ #
+-
++# CONFIG_NSH_DISABLE_IFCONFIG is not set
++# CONFIG_NSH_DISABLE_PS is not set
++# CONFIG_STANDARD_SERIAL is not set
+ CONFIG_ADC=y
+ CONFIG_ALLOW_MIT_COMPONENTS=y
++CONFIG_ANALOG=y
+ CONFIG_ARCH="arm"
+-CONFIG_ARCH_CHIP="stm32h7"
+-CONFIG_ARCH_CHIP_STM32H7=y
+-CONFIG_ARCH_CHIP_STM32H7A3ZI=y
+-CONFIG_ARCH_CHIP_STM32H7_CORTEXM7=y
+ CONFIG_ARCH_BOARD_CUSTOM=y
+ CONFIG_ARCH_BOARD_CUSTOM_DIR="../vendor/st/boards/stm32h7a3/nucleo-h7a3zi-q"
+ CONFIG_ARCH_BOARD_CUSTOM_DIR_RELPATH=y
+ CONFIG_ARCH_BOARD_CUSTOM_NAME="m2-bsp"
+ CONFIG_ARCH_BUTTONS=y
+-# CONFIG_ARCH_IRQBUTTONS is not set
+-# CONFIG_ARCH_LEDS is not set
++CONFIG_ARCH_CHIP="stm32h7"
++CONFIG_ARCH_CHIP_STM32H743ZI=y
++CONFIG_ARCH_CHIP_STM32H7=y
++CONFIG_ARCH_CHIP_STM32H7_CORTEXM7=y
++CONFIG_ARCH_IRQBUTTONS=y
+ CONFIG_ARCH_SETJMP_H=y
+ CONFIG_ARCH_STACKDUMP=y
+ CONFIG_ARMV7M_DCACHE=y
+@@ -32,61 +34,52 @@ CONFIG_BOARDCTL_RESET_CAUSE=y
+ CONFIG_BOARD_LATE_INITIALIZE=y
+ CONFIG_BOARD_LOOPSPERMSEC=25143
+ CONFIG_BUILTIN=y
+-CONFIG_CM_MM_TEST=y
+ CONFIG_DEBUG_SYMBOLS=y
+ CONFIG_DEV_URANDOM=y
+-CONFIG_DRIVERS_RTC=y
+-# CONFIG_EXAMPLES_BUTTONS is not set
+ CONFIG_EXAMPLES_HELLO=y
+ CONFIG_EXAMPLES_HELLOXX=y
+ CONFIG_EXAMPLES_LEDS=y
+ CONFIG_EXAMPLES_PIPE=y
+ CONFIG_EXAMPLES_POPEN=y
+ CONFIG_EXPERIMENTAL=y
+-CONFIG_FAT_LFN=y
+ CONFIG_FS_LITTLEFS=y
+ CONFIG_FS_TMPFS=y
+ CONFIG_HAVE_CXX=y
+ CONFIG_HAVE_CXXINITIALIZE=y
+ CONFIG_I2C=y
+-CONFIG_I2C_DRIVER=y
+ CONFIG_INIT_ENTRYPOINT="nsh_main"
+ CONFIG_INPUT=y
+ CONFIG_INPUT_BUTTONS=y
+-# CONFIG_INPUT_BUTTONS_LOWER is not set
++CONFIG_INPUT_BUTTONS_LOWER=y
+ CONFIG_INTELHEX_BINARY=y
+ CONFIG_IOB_NBUFFERS=128
+ CONFIG_IOB_NCHAINS=4
+-CONFIG_LIBC_FLOATINGPOINT=y
+-CONFIG_LIBC_REGEX=y
++CONFIG_LCD=y
++CONFIG_LCD_DEV=y
++CONFIG_LCD_UG2864HSWEG01=y
+ CONFIG_LIBC_SCANSET=y
+-CONFIG_MM_REGIONS=4
++CONFIG_MM_REGIONS=3
+ CONFIG_MTD=y
+ CONFIG_MTD_PARTITION=y
+ CONFIG_MTD_PROGMEM=y
+ CONFIG_NET=y
+ CONFIG_NETDEV_LATEINIT=y
+-CONFIG_NET_ICMP=y
+ CONFIG_NET_LOCAL=y
+ CONFIG_NET_SOCKOPTS=y
+ CONFIG_NET_TCP=y
+ CONFIG_NET_UDP=y
+ CONFIG_NSH_BUILTIN_APPS=y
+-# CONFIG_NSH_DISABLE_IFCONFIG is not set
+-# CONFIG_NSH_DISABLE_PS is not set
+ CONFIG_NSH_FILEIOSIZE=512
+ CONFIG_NSH_LINELEN=64
+ CONFIG_NSH_READLINE=y
+ CONFIG_ONESHOT=y
+-CONFIG_PIPES=y
++CONFIG_OPENWAVE=y
+ CONFIG_PREALLOC_TIMERS=4
+-CONFIG_PSEUDOFS_SOFTLINKS=y
+ CONFIG_PWM=y
+-CONFIG_RAM_SIZE=245760
+-CONFIG_RAM_START=0x20010000
++CONFIG_RAM_SIZE=131072
++CONFIG_RAM_START=0x20000000
+ CONFIG_RAW_BINARY=y
+ CONFIG_RR_INTERVAL=200
+-CONFIG_RTC=y
+ CONFIG_RTC_ALARM=y
+ CONFIG_RTC_DATETIME=y
+ CONFIG_RTC_DRIVER=y
+@@ -94,58 +87,41 @@ CONFIG_RTC_IOCTL=y
+ CONFIG_RTC_PERIODIC=y
+ CONFIG_SCHED_HAVE_PARENT=y
+ CONFIG_SCHED_LPWORK=y
+-CONFIG_SCHED_WAITPID=y
+ CONFIG_SIG_EVTHREAD=y
+-CONFIG_SPI=y
+-CONFIG_SPI_EXCHANGE=y
+-# CONFIG_STANDARD_SERIAL is not set
++CONFIG_SPI_CMDDATA=y
+ CONFIG_START_DAY=6
+ CONFIG_START_MONTH=12
+ CONFIG_START_YEAR=2011
+ CONFIG_STM32H7_ADC1=y
+ CONFIG_STM32H7_DMA1=y
+ CONFIG_STM32H7_DMA2=y
++CONFIG_STM32H7_DTCMEXCLUDE=y
+ CONFIG_STM32H7_HSI48=y
+ CONFIG_STM32H7_I2C1=y
+ CONFIG_STM32H7_I2C2=y
+ CONFIG_STM32H7_IWDG=y
+ CONFIG_STM32H7_ONESHOT=y
+-# CONFIG_STM32H7_OTGFS is not set
+ CONFIG_STM32H7_PROGMEM=y
+ CONFIG_STM32H7_PWR=y
+-CONFIG_STM32H7_RNG=y
+ CONFIG_STM32H7_RTC=y
+ CONFIG_STM32H7_SPI3=y
+ CONFIG_STM32H7_TIM1=y
+-CONFIG_STM32H7_TIM1_CH1MODE=0
+ CONFIG_STM32H7_TIM1_CH1OUT=y
+-CONFIG_STM32H7_TIM1_CHANNEL1=y
+ CONFIG_STM32H7_TIM1_PWM=y
+-CONFIG_STM32H7_TIM1_PWM_CHANNEL1=y
+ CONFIG_STM32H7_TIM2=y
+ CONFIG_STM32H7_USART3=y
+ CONFIG_STM32H7_USART6=y
+-# CONFIG_STM32H7_USE_LEGACY_PINMAP is not set
+ CONFIG_STM32H7_WWDG=y
+ CONFIG_SYSTEM_I2CTOOL=y
+ CONFIG_SYSTEM_NSH=y
+ CONFIG_SYSTEM_POPEN=y
+ CONFIG_TASK_NAME_SIZE=0
+-CONFIG_TESTING_CMOCKA=y
+-CONFIG_TESTING_DRIVERS_NIST_STS=y
+-CONFIG_TESTING_DRIVER_TEST=y
+-CONFIG_TESTING_DRIVER_TEST_STACKSIZE=8192
+ CONFIG_TESTING_FSTEST=y
+ CONFIG_TESTING_GETPRIME=y
+ CONFIG_TESTING_MM=y
+ CONFIG_TESTING_OSTEST=y
+ CONFIG_TESTING_RAMTEST=y
+ CONFIG_TESTING_SCANFTEST=y
+-CONFIG_TESTS_TESTSUITES=y
+-CONFIG_TESTS_TESTSUITES_STACKSIZE=16384
+ CONFIG_USART3_SERIAL_CONSOLE=y
+-# CONFIG_USBDEV is not set
+-# CONFIG_USBHOST is not set
+ CONFIG_USERLED=y
+ CONFIG_USERLED_LOWER=y
+-CONFIG_WATCHDOG=y
+diff --git a/boards/stm32h7a3/nucleo-h7a3zi-q/src/Makefile b/boards/stm32h7a3/nucleo-h7a3zi-q/src/Makefile
+index f3b838a..df0d34c 100644
+--- a/boards/stm32h7a3/nucleo-h7a3zi-q/src/Makefile
++++ b/boards/stm32h7a3/nucleo-h7a3zi-q/src/Makefile
+@@ -70,6 +70,7 @@ ifeq ($(CONFIG_PCA9635PW),y)
+ CSRCS += stm32_pca9635.c
+ endif
+ 
++
+ ifeq ($(CONFIG_LCD_SSD1306),y)
+ CSRCS += stm32_ssd1306.c
+ endif
+diff --git a/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_bringup.c b/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_bringup.c
+index 0a42d87..767175a 100644
+--- a/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_bringup.c
++++ b/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_bringup.c
+@@ -25,6 +25,7 @@
+  ****************************************************************************/
+ 
+ #include <nuttx/config.h>
++#include <nuttx/lcd/lcd_dev.h>
+ 
+ #include <sys/types.h>
+ #include <syslog.h>
+@@ -412,5 +413,22 @@ int stm32_bringup(void)
+   stm32_iwdginitialize("/dev/watchdog0", STM32_LSI_FREQUENCY);
+ #endif
+ 
++#ifdef CONFIG_LCD_DEV
++  /* Initialize the SSD1306 OLED and register /dev/lcd0 */
++  ret = board_lcd_initialize();
++  if (ret < 0)
++    {
++      syslog(LOG_ERR, "ERROR: board_lcd_initialize failed: %d\n", ret);
++    }
++  else
++    {
++      ret = lcddev_register(0);
++      if (ret < 0)
++        {
++          syslog(LOG_ERR, "ERROR: lcddev_register failed: %d\n", ret);
++        }
++    }
++#endif /* CONFIG_LCD_DRIVER */
++
+   return OK;
+ }
+diff --git a/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_spi.c b/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_spi.c
+index 6f5893d..9c74860 100644
+--- a/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_spi.c
++++ b/boards/stm32h7a3/nucleo-h7a3zi-q/src/stm32_spi.c
+@@ -1,27 +1,10 @@
+ /****************************************************************************
+  * boards/arm/stm32h7/nucleo-h7a3zi-q/src/stm32_spi.c
+  *
+- * SPDX-License-Identifier: Apache-2.0
+- *
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.  The
+- * ASF licenses this file to you under the Apache License, Version 2.0 (the
+- * "License"); you may not use this file except in compliance with the
+- * License.  You may obtain a copy of the License at
+- *
+- *   http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  See the
+- * License for the specific language governing permissions and limitations
+- * under the License.
++ * Board SPI glue for the OpenWave SSD1306 OLED on SPI3:
++ *   CS = PE11 (active low), DC = PE12 (command low / data high)
+  *
+- ****************************************************************************/
+-
+-/****************************************************************************
+- * Included Files
++ * SPDX-License-Identifier: Apache-2.0
+  ****************************************************************************/
+ 
+ #include <nuttx/config.h>
+@@ -31,7 +14,10 @@
+ #include <errno.h>
+ #include <debug.h>
+ 
++#include <sys/param.h>
++
+ #include <nuttx/spi/spi.h>
++#include <arch/board/board.h>
+ 
+ #include "arm_internal.h"
+ #include "chip.h"
+@@ -39,266 +25,55 @@
+ #include "stm32_spi.h"
+ 
+ #include "nucleo-h7a3zi-q.h"
+-#include <arch/board/board.h>
+ 
+-#ifdef CONFIG_STM32H7_SPI
+-
+-/****************************************************************************
+- * Public Functions
+- ****************************************************************************/
++#if defined(CONFIG_SPI)
+ 
+-/****************************************************************************
+- * Name: stm32_spidev_initialize
+- *
+- * Description:
+- *   Called to configure SPI chip select GPIO pins for the Nucleo-144 board.
+- *
+- ****************************************************************************/
+-
+-void stm32_spidev_initialize(void)
+-{
+-  /* NOTE: Clocking for SPI1 and/or SPI3 was already provided in stm32_rcc.c.
+-   *       Configurations of SPI pins is performed in stm32_spi.c.
+-   *       Here, we only initialize chip select pins unique to the board
+-   *       architecture.
+-   */
+-
+-#ifdef CONFIG_STM32H7_SPI3
+-  spiinfo("Configure GPIO for SPI3/CS\n");
+-
+-#  ifdef CONFIG_WL_NRF24L01
+-  /* Configure the SPI-based NRF24L01 chip select GPIO */
+-
+-  stm32_configgpio(GPIO_NRF24L01_CS);
+-  stm32_gpiowrite(GPIO_NRF24L01_CS, true);
+-#  endif
+-#  ifdef CONFIG_MMCSD_SPI
+-  /* Configure the SPI-based MMC/SD chip select and card detect GPIO */
+-
+-  stm32_configgpio(GPIO_MMCSD_CS);
+-  stm32_gpiowrite(GPIO_MMCSD_CS, true);
+-  stm32_configgpio(GPIO_MMCSD_NCD);
++#ifndef GPIO_SPI3_CS0
++#  define GPIO_SPI3_CS0 (GPIO_OUTPUT | GPIO_PUSHPULL | GPIO_SPEED_50MHz | \
++                         GPIO_PORTE | GPIO_PIN11)
+ #endif
+-#endif
+-}
+-
+-/****************************************************************************
+- * Name:  stm32_spi1/2/3/4/5select and stm32_spi1/2/3/4/5status
+- *
+- * Description:
+- *   The external functions, stm32_spi1/2/3select and stm32_spi1/2/3status
+- *   must be provided by board-specific logic.  They are implementations of
+- *   the select and status methods of the SPI interface defined by struct
+- *   spi_ops_s (see include/nuttx/spi/spi.h). All other methods
+- *   (including stm32_spibus_initialize()) are provided by common STM32
+- *   logic.  To use this common SPI logic on your board:
+- *
+- *   1. Provide logic in stm32_boardinitialize() to configure SPI chip select
+- *      pins.
+- *   2. Provide stm32_spi1/2/3select() and stm32_spi1/2/3status() functions
+- *      in your board-specific logic.  These functions will perform chip
+- *      selection and status operations using GPIOs in the way your board is
+- *      configured.
+- *   3. Add a calls to stm32_spibus_initialize() in your low level
+- *      application initialization logic
+- *   4. The handle returned by stm32_spibus_initialize() may then be used to
+- *      bind the SPI driver to higher level logic (e.g., calling
+- *      mmcsd_spislotinitialize(), for example, will bind the SPI driver to
+- *      the SPI MMC/SD driver).
+- *
+- ****************************************************************************/
+-
+-#ifdef CONFIG_STM32H7_SPI1
+-void stm32_spi1select(struct spi_dev_s *dev,
+-                      uint32_t devid, bool selected)
+-{
+-  spiinfo("devid: %08lx CS: %s\n",
+-          (unsigned long)devid, selected ? "assert" : "de-assert");
+-}
+ 
+-uint8_t stm32_spi1status(struct spi_dev_s *dev, uint32_t devid)
+-{
+-  return 0;
+-}
++#ifndef GPIO_SSD1306_DC
++#  define GPIO_SSD1306_DC (GPIO_OUTPUT | GPIO_PUSHPULL | GPIO_SPEED_50MHz | \
++                           GPIO_PORTE | GPIO_PIN12)
+ #endif
+ 
+-#ifdef CONFIG_STM32H7_SPI2
+-void stm32_spi2select(struct spi_dev_s *dev,
+-                      uint32_t devid, bool selected)
++static const uint32_t g_spi3gpio[] =
+ {
+-  spiinfo("devid: %08lx CS: %s\n",
+-          (unsigned long)devid, selected ? "assert" : "de-assert");
+-}
++  GPIO_SPI3_CS0
++};
+ 
+-uint8_t stm32_spi2status(struct spi_dev_s *dev, uint32_t devid)
++void weak_function stm32_spidev_initialize(void)
+ {
+-  return 0;
++  stm32_configgpio(GPIO_SPI3_CS0);
++  stm32_configgpio(GPIO_SSD1306_DC);
+ }
+-#endif
+ 
+-#ifdef CONFIG_STM32H7_SPI3
+-void stm32_spi3select(struct spi_dev_s *dev,
+-                      uint32_t devid, bool selected)
++void stm32_spi3select(struct spi_dev_s *dev, uint32_t devid, bool selected)
+ {
+-  switch (devid)
+-    {
+-#ifdef CONFIG_WL_NRF24L01
+-      case SPIDEV_WIRELESS(0):
+-        spiinfo("nRF24L01 device %s\n",
+-                selected ? "asserted" : "de-asserted");
+-
+-        /* Set the GPIO low to select and high to de-select */
++  uint32_t index = SPIDEVID_INDEX(devid);
+ 
+-        stm32_gpiowrite(GPIO_NRF24L01_CS, !selected);
+-        break;
+-#endif
++  spiinfo("devid: %d CS: %s\n", (int)devid,
++          selected ? "assert" : "de-assert");
+ 
+-#ifdef CONFIG_MMCSD_SPI
+-      case SPIDEV_MMCSD(0):
+-        stm32_gpiowrite(GPIO_MMCSD_CS, !selected);
+-        break;
+-#endif
+-
+-      default:
+-        break;
+-    }
+-}
+-
+-uint8_t stm32_spi3status(struct spi_dev_s *dev, uint32_t devid)
+-{
+-  uint8_t status = 0;
+-  switch (devid)
++  if (index < nitems(g_spi3gpio) && g_spi3gpio[index] != 0)
+     {
+-#ifdef CONFIG_WL_NRF24L01
+-      case SPIDEV_WIRELESS(0):
+-        status |= SPI_STATUS_PRESENT;
+-        break;
+-#endif
+-
+-#ifdef CONFIG_MMCSD_SPI
+-      case SPIDEV_MMCSD(0):
+-
+-        /* Note: SD_DET is pulled high when there's no SD card present. */
+-
+-        status |= stm32_gpioread(GPIO_MMCSD_NCD);
+-        break;
+-#endif
+-
+-      default:
+-        break;
++      stm32_gpiowrite(g_spi3gpio[index], !selected);
+     }
+-
+-  return status;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI4
+-void stm32_spi4select(struct spi_dev_s *dev,
+-                      uint32_t devid, bool selected)
+-{
+-  spiinfo("devid: %08lx CS: %s\n",
+-          (unsigned long)devid, selected ? "assert" : "de-assert");
+ }
+ 
+-uint8_t stm32_spi4status(struct spi_dev_s *dev, uint32_t devid)
+-{
+-  return 0;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI5
+-void stm32_spi5select(struct spi_dev_s *dev,
+-                      uint32_t devid, bool selected)
+-{
+-  spiinfo("devid: %08lx CS: %s\n",
+-          (unsigned long)devid, selected ? "assert" : "de-assert");
+-}
+-
+-uint8_t stm32_spi5status(struct spi_dev_s *dev, uint32_t devid)
+-{
+-  return 0;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI6
+-void stm32_spi6select(struct spi_dev_s *dev,
+-                      uint32_t devid, bool selected)
+-{
+-  spiinfo("devid: %08lx CS: %s\n",
+-          (unsigned long)devid, selected ? "assert" : "de-assert");
+-}
+-
+-uint8_t stm32_spi6status(struct spi_dev_s *dev, uint32_t devid)
++uint8_t stm32_spi3status(struct spi_dev_s *dev, uint32_t devid)
+ {
+   return 0;
+ }
+-#endif
+-
+-/****************************************************************************
+- * Name: stm32_spi1cmddata
+- *
+- * Description:
+- *   Set or clear the SH1101A A0 or SD1306 D/C n bit to select data (true)
+- *   or command (false). This function must be provided by platform-specific
+- *   logic. This is an implementation of the cmddata method of the SPI
+- *   interface defined by struct spi_ops_s (see include/nuttx/spi/spi.h).
+- *
+- * Input Parameters:
+- *
+- *   spi - SPI device that controls the bus the device that requires the CMD/
+- *         DATA selection.
+- *   devid - If there are multiple devices on the bus, this selects which one
+- *         to select cmd or data.  NOTE:  This design restricts, for example,
+- *         one one SPI display per SPI bus.
+- *   cmd - true: select command; false: select data
+- *
+- * Returned Value:
+- *   None
+- *
+- ****************************************************************************/
+ 
+ #ifdef CONFIG_SPI_CMDDATA
+-#ifdef CONFIG_STM32H7_SPI1
+-int stm32_spi1cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd)
+-{
+-  return -ENODEV;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI2
+-int stm32_spi2cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd)
+-{
+-  return -ENODEV;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI3
+ int stm32_spi3cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd)
+ {
+-  return -ENODEV;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI4
+-int stm32_spi4cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd)
+-{
+-  return -ENODEV;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI5
+-int stm32_spi5cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd)
+-{
+-  return -ENODEV;
+-}
+-#endif
+-
+-#ifdef CONFIG_STM32H7_SPI6
+-int stm32_spi5cmddata(struct spi_dev_s *dev, uint32_t devid, bool cmd)
+-{
+-  return -ENODEV;
++  /* SSD1306: DC low = command, DC high = data. */
++  stm32_gpiowrite(GPIO_SSD1306_DC, !cmd);
++  return OK;
+ }
+ #endif
+ 
+-#endif /* CONFIG_SPI_CMDDATA */
+-#endif /* CONFIG_STM32H7_SPI */
++#endif /* CONFIG_SPI */

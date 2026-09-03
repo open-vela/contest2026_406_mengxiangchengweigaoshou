@@ -1,0 +1,80 @@
+#
+# OpenWave -- high-precision data acquisition and real-time
+# waveform / parameter display terminal
+#
+# Target: STM32H7A3 (NUCLEO-H7A3ZI-Q), openvela (NuttX kernel)
+#
+
+config OPENWAVE
+	bool "OpenWave: high-precision acquisition & waveform terminal"
+	default n
+	---help---
+		OpenWave is a pure on-device signal acquisition, real-time DSP
+		(RMS / peak / FFT) and OLED waveform display terminal for the
+		STM32H7A3 (NUCLEO-H7A3ZI-Q) platform.
+
+if OPENWAVE
+
+config OPENWAVE_PROGNAME
+	string "Program name"
+	default "openwave"
+	---help---
+		The name used to invoke the application from the NuttShell (NSH)
+		command line.
+
+config OPENWAVE_PRIORITY
+	int "OpenWave task priority"
+	default 100
+
+config OPENWAVE_STACKSIZE
+	int "OpenWave stack size"
+	default 8192
+
+config OPENWAVE_ADC_DEVPATH
+	string "ADC device path"
+	default "/dev/adc0"
+	---help---
+		Path of the ADC character device used by OpenWave.
+
+config OPENWAVE_ADC_NSAMPLES
+	int "Number of samples to print (0 = run forever)"
+	default 64
+	---help---
+		Default number of ADC samples printed before the application
+		exits.  This can be overridden with the -n command line option.
+
+config OPENWAVE_PWM_DEVPATH
+	string "PWM device path"
+	default "/dev/pwm0"
+	---help---
+		Path of the PWM character device used by OpenWave to generate
+		the self-loop test signal.
+
+config OPENWAVE_PWM_DEFAULT_FREQ
+	int "Default PWM frequency in Hz (0 = disabled)"
+	default 0
+	---help---
+		Frequency of the PWM test signal started by default.  Set to 0
+		to keep PWM off unless -f is given on the command line.
+
+config OPENWAVE_PWM_DEFAULT_DUTY
+	int "Default PWM duty cycle in percent"
+	default 50
+
+config OPENWAVE_ANALYZE_WINDOW
+	int "Samples per analysis window (0 = raw mode; use 256 or 512)"
+	default 256
+	---help---
+		Number of samples of the selected channel collected before each
+		statistics line is printed.  Set to 0 to fall back to printing
+		every raw sample (M2/M3 style).  The FFT requires a power of
+		two, so use 256 or 512.
+
+config OPENWAVE_ANALYZE_CHANNEL
+	int "ADC channel to analyze"
+	default 5
+	---help---
+		ADC channel used for the statistics window (see the board
+		channel list: 5, 10, 12, 13, 15).
+
+endif # OPENWAVE
