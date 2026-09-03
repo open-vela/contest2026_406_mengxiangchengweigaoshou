@@ -1,148 +1,193 @@
-# contest2026_406_mengxiangchengweigaoshou
+# OpenWave —— 基于 openvela 的高精度采集与波形显示终端
 
-👋 欢迎参加 **2026 首届 openvela AI 硬件开发者大赛**！
+OpenWave 是一个运行在 openvela（NuttX）上的端侧数据采集终端。它在
+STM32H7A3 单颗 MCU 上完成 16 位 ADC 采样、双精度浮点实时信号处理
+（均值 / RMS / 峰峰值 / 过零频率 / FFT），并通过 0.96 英寸 SSD1306
+OLED 显示实时波形与参数；支持按键交互、LED 告警、RTC 时间戳与 Flash
+快照记录。纯端侧应用，不联网、不依赖云端。
 
-这是组委会为你的队伍创建的**专属参赛仓库**（本仓为样例/模板，队伍编号 `406`；你看到的将是你自己的 `contest2026_<编号>_<队伍名>`）。比赛期间，你的全部参赛代码、打包产物与 AI Coding 日志都提交到这里。
+## 一、硬件平台
 
-> 本仓既是「代码仓」，又内置了一键拉取整套 openvela 工程的 `repo` 清单（manifest）。你只需跟它打交道，**自始至终只动一个文件夹**。
+- 开发板：NUCLEO-H7A3ZI-Q（STM32H7A3ZIT6Q，Cortex-M7 @ 280 MHz）
+- 2 MB Flash，1.4 MB SRAM，单/双精度 FPU，DSP 指令
+- 16 位 ADC1（通道 5/10/12/13/15），TIM1 互补 PWM
+- SPI3、I2C1/I2C2、USART3（ST-Link 虚拟串口 115200 8N1）
+- RTC、看门狗、TRNG、内部 Flash MTD
+- 0.96 英寸 SSD1306 OLED（128×64，SPI）
 
----
+### 设备节点
 
-## 一、先读这些官方文档
+| 外设 | 设备节点 |
+| --- | --- |
+| ADC1 | `/dev/adc0` |
+| TIM1 PWM | `/dev/pwm0` |
+| SSD1306 OLED | `/dev/lcd0` |
+| USER 按键 | `/dev/buttons` |
+| 用户 LED | `/dev/userleds` |
+| RTC | `/dev/rtc0` |
+| 内部 Flash MTD | `/dev/progmem0` |
+| 串口控制台 | `/dev/console`（ttyS0） |
 
-**通用（所有赛道必读）：**
+## 二、接线
 
-| 文档                                                                                                                                     | 用途                                           |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| [《大赛总览》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/contest_overview.md)                        | 赛道、流程、评分、资源，建议先通读             |
-| [《参赛代码提交指南》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/code_submission_guide.md)           | 仓库获取、提交流程、时间与权限（**以此为准**） |
-| [《AI Coding 日志归集与提交手册》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_coding_log_guide.md) | 如何导出 AI 对话日志并提交到 `logs/`           |
+> 注意：以下引脚大部分位于板边 **morpho 排针 CN11/CN12** 上，需要先
+> 焊接排针后才能用杜邦线可靠连接。
 
-**按你的赛道选读（三选一）：**
+### OLED（SSD1306，128×64，SPI，7 引脚）
 
-| 赛道                  | 教程导航                                                                                                                                                 |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 快应用 / 手表应用创新 | [快应用教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/quickapp/quickapp_guide_index.md)                         |
-| AI 硬件产品创新       | [AI 硬件赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_hardware/ai_hardware_guide_index.md)              |
-| 新硬件适配            | [新硬件适配赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/hardware_porting/hardware_porting_guide_index.md) |
+| OLED 引脚 | 接到板子 |
+| --- | --- |
+| VCC | 3V3 |
+| GND | GND |
+| SCK | PB3（SPI3 SCK） |
+| MOSI | PB5（SPI3 MOSI） |
+| CS | PE11 |
+| DC | PE12 |
+| RES | PE13 |
 
----
+### PWM 自闭环（测试信号回采）
 
-## 二、第一步：拉取完整工程
+用一根杜邦线把 **PE9（TIM1_CH1）** 直接连到 **PB1（ADC 通道 5）**。
 
-用组委会提供的命令一键拉取「openvela 全量源码 + 你的专属仓」：
+## 三、编译
+
+> 板级适配依赖 nuttx/vendor 的补丁（logs/patch_nuttx.diff、
+> logs/patch_vendor_st.diff）。若从干净源码构建，请先应用：
+>
+> ```bash
+> bash ~/openvela/contest2026_406_mengxiangchengweigaoshou/apply_patches.sh
+> ```
 
 ```bash
-repo init -u https://github.com/open-vela/contest2026_406_mengxiangchengweigaoshou \
-  -b dev-ai-contest-2026 -m contest2026_406_mengxiangchengweigaoshou.xml
-repo sync -c -j8
+cd ~/openvela
+./build.sh $(pwd)/vendor/st/boards/stm32h7a3/nucleo-h7a3zi-q/configs/m2-bsp -j$(nproc)
 ```
 
-同步后，你的整个仓库位于工作区的 `contest2026_406_mengxiangchengweigaoshou/`，openvela 全量源码在外层（`nuttx/`、`apps/`、`packages/`、`vendor/` 等）。
+产物：`~/openvela/nuttx/nuttx.bin`
 
----
+## 四、烧录
 
-## 三、第二步：在哪里写代码
+```bash
+cd ~/openvela
+openocd -f interface/stlink.cfg -f target/stm32h7x.cfg \
+  -c "program nuttx/nuttx.bin 0x08000000 verify reset exit"
+```
 
-**只在自己的仓目录 `contest2026_406_mengxiangchengweigaoshou/` 里开发。** 不同作品形态放在对应子目录，manifest 会通过 `<linkfile>` 把它们**软链**到 openvela 编译树该在的位置——你不用手动 copy：
+看到 `** Verified OK **` 即成功。烧录后**拔掉 USB 线等 2 秒再插回**
+（PWR_CR3 供电配置只能在上电瞬间写入一次）。
 
-| 作品形态 | 你的代码放这里             | 系统自动映射到                                 |
-| -------- | -------------------------- | ---------------------------------------------- |
-| 应用     | `app/hello_app/`           | `packages/demos/contest2026_406_hello_app`     |
-| 快应用   | `quickapp/hello_quickapp/` | `packages/apps/contest2026_406_hello_quickapp` |
-| 板级适配 | `board/contest_board/`     | `vendor/openvela/boards/contest2026_406_board` |
+## 五、运行
 
-> 用不到的形态目录可以删掉；新增作品时按同样规则加子目录，并在 `contest2026_406_mengxiangchengweigaoshou.xml` 里补一条 `<linkfile>` 映射即可。**生产仓库（packages/nuttx/vendor 等）零改动。**
+串口终端（115200 8N1）连接 ST-Link 虚拟串口：
 
-建议仓库目录约定（便于评委定位）：
+```bash
+minicom -D /dev/ttyACM0 -b 115200
+```
+
+进入 NSH 后：
+
+```bash
+openwave              # 分析模式，默认 64 个窗口后退出
+openwave -n 0         # 无限运行
+openwave -n 20        # 运行 20 个统计窗口
+openwave -T           # 接线自检（OLED + PWM/ADC 回环）
+openwave -f 1000 -n 5 # 开启 1 kHz PWM 测试信号并分析
+openwave -w 0 -n 5    # 原始采样模式（打印每通道 raw/mV）
+```
+
+主要选项：
+
+| 选项 | 说明 |
+| --- | --- |
+| `-n <窗口数>` | 统计窗口数，0 = 无限 |
+| `-w <窗口大小>` | 每窗口采样数（默认 256，0 = 原始模式） |
+| `-c <通道>` | 分析通道（默认 5） |
+| `-f <频率>` | PWM 测试信号频率（0 = 关闭） |
+| `-D <占空比>` | PWM 占空比百分比 |
+| `-t` | 每次读取前发软件触发（默认已开启） |
+
+## 六、功能说明
+
+### 采集（M2）
+
+- 从 `/dev/adc0` 读取 16 位采样，5 通道（5/10/12/13/15）
+- 每次读取前发 `ANIOC_TRIGGER` 软件触发（H7A3 板载 ADC 需要）
+- 每通道约 200 Hz 采样率
+
+### PWM 自闭环（M3）
+
+- 通过 `/dev/pwm0`（TIM1）输出可调频率 / 占空比方波
+- 杜邦线 PE9→PB1 接回 ADC，形成自闭环验证
+
+### 信号处理（M4）
+
+- 均值、RMS、峰峰值、过零频率
+- 256 点 radix-2 FFT 辅助测频
+
+### OLED 显示（M5）
+
+- 128×64 单色屏实时绘制波形曲线
+- 顶部显示通道与采样率，底部显示 RMS / Vpp / 频率
+
+### 交互与持久化（M6）
+
+- **短按 B1**：切换分析通道（5→10→12→13→15→5）
+- **长按 B1**：保存快照（RTC 时间戳 + 当前统计），三个 LED 闪烁确认
+- **阈值告警**：Vpp 超过 2500 mV 时 LED0 点亮
+- 快照打印到串口；Flash 写入尝试后自动降级为串口确认
+
+## 七、工程结构
 
 ```text
-app/ | quickapp/ | board/   # 你的作品代码
-logs/                       # AI Coding 日志（主动导出后提交，格式见 logs/README.md）
-README.md                   # 作品说明（提交前请改成你自己的，见第六节）
+app/openwave/
+├── Kconfig             # 应用配置项
+├── Makefile / CMakeLists.txt
+├── openwave_main.c     # 入口 + 事件循环（M6 交互）
+├── wave_core.c/h       # ADC 采样、环形缓冲
+├── wave_dsp.c/h        # 均值/RMS/Vpp/过零/FFT
+├── wave_gen.c/h        # PWM 测试信号
+├── wave_ui.c/h         # SSD1306 波形/文本绘制
+├── wave_input.c/h      # 按键短按/长按识别
+└── wave_store.c/h      # 快照（RTC + Flash/串口）
 ```
 
-> 仓内附带了一个 `.gitignore.example`，给出了**编译产物**等不需要进仓的文件示例。如需启用，`cp .gitignore.example .gitignore` 后按需增删即可。**注意 `logs/` 下最终导出的 AI Coding 日志必须提交，不要忽略。**
->
-> `logs/` 的目录结构与提交格式见 [logs/README.md](logs/README.md)。
+## 八、里程碑完成情况
 
----
+| 里程碑 | 内容 | 状态 |
+| --- | --- | --- |
+| M1 | 工程骨架可编译，NSH 可运行 openwave | ✅ |
+| M2 | ADC 采集（raw/mV 输出） | ✅ |
+| M3 | PWM 测试信号 + 回环 | ✅（固件，回环待接线） |
+| M4 | 信号处理（均值/RMS/Vpp/频率/FFT） | ✅ |
+| M5 | SSD1306 波形与参数显示 | ✅（固件，屏幕待接线） |
+| M6 | 按键/LED/RTC/Flash 快照 | ✅ |
 
-## 四、第三步：编译与运行
+## 九、已知限制
 
-编译/运行步骤随作品形态不同而不同，请参考你所在赛道的教程导航：
+1. **Flash 快照降级**：板载 Flash 驱动为 H743 兼容驱动，H7A3 上仅第一
+   个 32 字节页可编程，后续写入返回 EIO；快照按任务书以**串口确认**
+   验收。如需真正的 Flash 持久化，需要补齐 H7A3 原生 Flash 驱动。
+2. **OLED/PWM 物理验证**：morpho 排针需焊接后才能接线验证屏幕显示与
+   PWM 回环；固件侧驱动均已就绪（`/dev/lcd0`、`/dev/pwm0` 存在）。
+3. **NSH `help` 小问题**：`help` 列出内置应用时可能触发一次 panic，
+   不影响 openwave 运行。
+4. **RTC 默认时间**：未设置时 RTC 读回 2000-01-01，可用 NSH `date`
+   命令设置。
+5. **采样率**：软件触发模式下每通道约 200 Hz；如需更高采样率应配置
+   定时器触发（如 TIM2_ADC）。
 
-- 快应用 / 手表应用：[快应用教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/quickapp/quickapp_guide_index.md)（含模拟器与开发板部署）。
-- AI 硬件产品创新：[AI 硬件赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_hardware/ai_hardware_guide_index.md)（环境搭建、编译烧录、Skill 开发）。
-- 新硬件适配：[新硬件适配赛道教程导航](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/hardware_porting/hardware_porting_guide_index.md)（BSP 移植、最小 NSH 基线）。
+## 十、演示流程（视频脚本）
 
-子目录已通过 manifest 中的 `<linkfile>` 软链进 openvela 编译树，因此构建在 openvela 工作区**根目录**（即你这个仓的上一级）进行。openvela 使用 `build.sh` 作为统一入口，接收一个 **board config 路径**作为参数：
+1. 打开串口，展示 NSH 启动；
+2. `openwave -n 0` 无限运行，展示实时统计（50 Hz 工频干扰可被正确检测）；
+3. 短按 B1 依次切换通道 5→10→12→13→15；
+4. 长按 B1 保存快照，展示时间戳与统计、LED 闪烁；
+5. 若已接线 OLED，展示屏幕上的实时波形；
+6. `openwave -T` 展示接线自检。
 
-```bash
-# 进入 openvela 工作区根目录（你的仓的上一级）
-cd ..
+## 十一、AI 协作说明
 
-# 通用语法：第一个参数是 board config 路径，第二个参数可以是 menuconfig / distclean 等
-./build.sh <board-config-path> [menuconfig|distclean] [-j8]
-```
-
-> 具体的 board config 路径、目标产物、模拟器/真机部署方式请以你所在赛道的教程导航为准。本仓 `app/` `quickapp/` `board/` 三个示例骨架对应的 Kconfig 选项可通过 `menuconfig` 启用。
-
----
-
-## 五、第四步：提交作品
-
-1. **fork** 你的专属仓 → 开发 → `git commit` 并推送 → 向专属仓发起 **Pull Request**，可**自行 review 并合入**（无需等组委会）。
-2. **AI Coding 日志**：与 AI 工具的对话会自动记录到本机 staging（不会自动上传），需你**主动导出/打包**选定会话到仓内 `logs/` 目录后一并提交。详见[《AI Coding 日志归集与提交手册》](https://github.com/open-vela/docs/blob/dev-ai-contest-2026/zh-cn/contest_2026/ai_coding_log_guide.md)。
-3. 若需改动 **nuttx 等公共仓库**，不在本仓改，而是 fork 对应公共仓、以 PR 提交到 `dev-ai-contest-2026` 分支，由组委会 review 后合入。
-
-> ⏰ **提交作品截止：9 月 20 日**。截止后统一收回 push 权限，仍可查看 / clone。
->
-> 获奖后再按要求将作品 PR 至 openvela 上游对应仓库（走标准 PR + CI 流程）。
-
-### 关于 PR 与 CLA
-
-- 本仓所有改动通过 **Pull Request** 合入（分支保护强制，可自行合入自己的 PR）。
-- 首次贡献需在[**官网签署 CLA**](https://openvela.com/#/community/cla)；PR 上会自动跑 `cla/signature` 检查，在官网签署成功后，在 PR 评论 `/check-cla` 复检即可通过。
-
----
-
-## 六、提交前：把本 README 改成你的作品说明
-
-本文件目前是组委会给的**使用说明书**。**作品提交前，请把它替换成你自己作品的说明**，方便评委快速了解你做了什么、怎么跑起来。建议至少包含以下内容：
-
-```markdown
-# <你的作品名>
-
-## 一、作品简介
-<一句话/一段话说明这个作品是什么、解决什么问题、亮点在哪>
-
-## 二、选题方向
-<快应用 / 手表应用创新 ｜ AI 硬件产品创新 ｜ 新硬件适配 ｜ 自定方向，并简述理由>
-
-## 三、目录结构
-<列出你这个仓里各目录/文件的作用，例如：>
-- `app/xxx/`        — <说明>
-- `board/xxx/`      — <说明>
-- `quickapp/xxx/`   — <说明>
-- `logs/`           — AI Coding 日志
-- `docs/` 或其他    — <说明>
-
-## 四、运行方式
-<拉取工程后，如何编译、烧录/部署、运行的完整步骤；最好能让评委照着一步步复现>
-
-## 五、AI Coding 使用说明
-<说明本作品如何借助 AI 辅助开发：
-- 在需求拆解 / 方案设计 / 编码 / 调试 / 文档等环节如何与 AI 协作；
-- AI 对开发效率或质量带来的实际帮助。
-完整对话日志见 logs/ 目录>
-```
-
-> 提示：将会根据「作品本身 + 你的 README 说明 + `logs/` 里的 AI Coding 日志」来理解和评估你的作品，README 写清楚很重要。
-
----
-
-## 附：仓库命名规范
-
-`contest2026_<编号>_<队伍名>` — 编号三位零填充；队名 slug（全小写、英文/拼音、连字符）。例：`contest2026_406_mengxiangchengweigaoshou`。
-（仓库由组委会统一创建，**每队仅一个仓**，无需自行命名。）
+本项目的应用代码在 Windows 侧开发，通过临时文件服务同步到 Ubuntu
+虚拟机，在虚拟机内编译、烧录、验证。板级适配期间修复了多个厂商
+适配遗留问题（SMPS 供电配置、H7A3 内存尺寸、按键/LED 驱动注册等），
+详见 `logs/` 目录的 AI 编码日志。
